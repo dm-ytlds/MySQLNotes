@@ -33,3 +33,58 @@ SQL语句分类：
 
 ​	DCL（数据控制语言）：grant授权、revoke撤销权限等。
 
+导入数据：
+
+​	第一步：登录mysql数据库管理系统
+
+​		dos命令窗口： mysql -uroot -p1233
+
+​	第二步：查看有哪些数据库
+
+​		show databases;（这个不是SQL语句，属于MySQL的命令。）
+
+```mysql
+    mysql> show databases;
+    +--------------------+
+    | Database           |
+    +--------------------+
+    | information_schema |
+    | mysql              |
+    | performance_schema |
+    | sakila             |
+    | sys                |
+    | world              |
+    +--------------------+
+    6 rows in set (0.02 sec)
+```
+
+​	第三步：创建新的数据库
+
+​		create database testsql;
+
+​	第四步：使用创建的数据库
+
+​		use testsql;
+
+​	第五步：查看当前数据库中有哪些表
+
+​		show tables;
+
+​	第六步：初始化数据
+
+​		mysql> source E:\研究生\2021\MySQLNotes\SQL文件\testsql\testsql.sql
+
+​	初始化完成后，再次查看表：
+
+```
+mysql> show tables;
++-------------------+
+| Tables_in_testsql |
++-------------------+
+| dept              |
+| emp               |
+| salgrade          |
++-------------------+
+3 rows in set (0.00 sec)
+```
+
