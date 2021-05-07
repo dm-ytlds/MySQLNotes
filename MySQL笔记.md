@@ -857,7 +857,7 @@ mysql> select * from dept;
 4 rows in set (0.00 sec)
 ```
 
-删除数据 delete 删除大表用truncate
+删除数据 delete 删除大表中的数据用truncate
 
 ​	语法格式：
 
