@@ -829,7 +829,7 @@ values后面可以跟多条语句，用逗号隔开。
 create table 表名 as select语句;   将查询结果当做表创建出来。
 ```
 
-修改表中数据
+修改表中数据 update
 
 ​	语法格式：
 
@@ -855,5 +855,51 @@ mysql> select * from dept;
 |     40 | OPERATIONS | BOSTON   |
 +--------+------------+----------+
 4 rows in set (0.00 sec)
+```
+
+删除数据 delete 删除大表用truncate
+
+​	语法格式：
+
+```mysql
+delete from 表名 where 条件;
+注意：没有加条件，则全部删除。
+truncate table 表名;
+表被截断，不可回滚。
+```
+
+增删改查有一个术语：CRUD操作。
+
+​	Create（添加） Retrieve（检索） Update（修改） Delete（删除）
+
+！！！约束 constraint
+
+​	约束的作用：保证表中数据的合法性、有效性、完整性。
+
+​	常见的约束有哪些？
+
+​		非空约束：not null。约束的字段不能为空。
+
+​		唯一约束：unique	约束的字段不能重复。
+
+​		主键约束：primary key 约束的字段既不能为空，也不能重复，简称PK。
+
+​		外键约束：foreign key	简称FK。
+
+​		检查约束：check	目前MySQL不支持该约束。
+
+```mysql
+建表
+create table t_user(
+    id int,
+    username varchar(255) not null,
+    password varchar(255)
+);
+插入数据
+mysql> insert into t_user(id,password) values(1,'123');
+出现错误：username 没有默认值。
+ERROR 1364 (HY000): Field 'username' doesn't have a default value
+mysql> insert into t_user(id,username,password) values(1,'zs','123');
+Query OK, 1 row affected (0.01 sec)
 ```
 
