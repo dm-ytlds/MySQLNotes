@@ -882,11 +882,13 @@ truncate table 表名;
 
 ​		唯一约束：unique	约束的字段不能重复。
 
-​		主键约束：primary key 约束的字段既不能为空，也不能重复，简称PK。
+​		主键约束：primary key 约束的字段既不能为NULL，也不能重复，简称PK。
 
 ​		外键约束：foreign key	简称FK。
 
 ​		检查约束：check	目前MySQL不支持该约束。
+
+​	非空约束：not null。约束的字段不能为NULL。
 
 ```mysql
 建表
@@ -903,3 +905,324 @@ mysql> insert into t_user(id,username,password) values(1,'zs','123');
 Query OK, 1 row affected (0.01 sec)
 ```
 
+​	唯一约束：unique	约束的字段不能重复。
+
+```mysql
+1.在一个字段上加“唯一约束”。
+drop table if exists t_user;
+create table t_user(
+	id int,
+    username varchar(255) unique,
+    age int
+);
+mysql> insert into t_user values(123,"lisi",23);
+mysql> insert into t_user values(123,"lisi",24);
+ERROR 1062 (23000): Duplicate entry 'lisi' for key 't_user.username'
+
+2.在多个字段上加“唯一约束”。
+两种方式：
+drop table if exists t_user;
+create table t_user(
+	id int,
+    username varchar(255) unique,
+    usercode varchar(255) unique,   // 列级约束
+    age int
+);
+mysql> insert into t_user values(123,"lisi","lisi",23);
+Query OK, 1 row affected (0.09 sec)
+
+mysql> insert into t_user values(123,"lisi","lisi",23);
+ERROR 1062 (23000): Duplicate entry 'lisi' for key 't_user.username'
+
+drop table if exists t_user;
+create table t_user(
+	id int,
+    username varchar(255),
+    usercode varchar(255),
+    unique(username,usercode),  // 多个字段联合起来加唯一约束。表级约束
+    age int
+);
+mysql> insert into t_user values(123,"lisi","lisi",23);
+Query OK, 1 row affected (0.08 sec)
+
+mysql> insert into t_user values(123,"lisi","lisi",23);
+ERROR 1062 (23000): Duplicate entry 'lisi-lisi' for key 't_user.username'
+
+```
+
+​	主键约束：primary key 约束的字段既不能为NULL，也不能重复，简称PK。
+
+```mysql
+drop table if exists t_user;
+create table t_user(
+	id int primary key,
+    username varchar(255) unique,
+    age int
+);
+mysql> insert into t_user values(1,'ls',23);
+select * from t_user;
+mysql> insert into t_user values(1,'ww',23);
+ERROR 1062 (23000): Duplicate entry '1' for key 't_user.PRIMARY'
+```
+
+​		主键有什么作用？
+
+​		表的三范式，第一范式就是要有主键。
+
+​		主键值是这行记录在这张表中的唯一标识。 
+
+​		！！！<font color=#FFFF00>一张表的主键约束只能有一个。</font>
+
+​		主键的分类：
+
+​			根据主键的字段数量划分：
+
+​				单一主键
+
+​				复合主键（多个字段联合起来添加一个主键约束。不建议使用）
+
+​			根据主键性质来划分：
+
+​				自然主键：主键值最好和业务没有关系的自然数。
+
+​				业务主键：主键值和系统的业务挂钩。比如身份证号作主键。<font color=#FFFF00>最好不要用业务主键这种形式，业务一旦改变，主键值就可能改变。</font>
+
+！！！<font color=#FF0000>MySQL提供的主键值自增：auto_increment 。Oracle中的自增机制：sequence序列对象。</font>
+
+​	外键约束  
+
+​		语法格式：
+
+```mysql
+foreign key(子表字段名) references 父表名(父表作为外键的字段名)
+```
+
+ 		Example:
+
+```mysql
+// 如果存在：先删除子表t_student，在删除父表t_class
+drop table if exists t_student;
+drop table if exists t_class;
+// 创建班级表
+create table t_class(
+    cno varchar(255) primary key,
+    cname varchar(255)
+);
+// 插入班级信息
+insert into t_class values("101","class 101");
+insert into t_class values("102","class 102");
+
+// 创建学生表
+create table t_student(
+	stuno int primary key auto_increment,
+    sname varchar(255),
+    classno varchar(255),
+    foreign key(classno) references t_class(cno)
+);
+// 插入学生信息
+insert into t_student values(1,"zs","101");
+insert into t_student(sname,classno) values("ls","102");
+```
+
+​	外键值可以为NULL。
+
+​	外键字段的引用不一定非得是父表的主键，但至少字段值是唯一的。
+
+如何查看表的创建过程？
+
+```mysql
+show create table t_user;
+可以看到完整的建表语句：
+CREATE TABLE `t_user` (
+  `id` int NOT NULL,
+  `username` varchar(255) DEFAULT NULL,
+  `age` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+```
+
+存储引擎（了解内容）
+
+​	查看当前MySQL支持的存储引擎：show engines \G;
+
+​	常见的存储引擎有：
+
+​		MyISAM；
+
+​		InnoDB；
+
+​		MEMORY。
+
+<font color=#FF0000>事务（transaction）</font>
+
+​	和事务相关的语句只有DML语句（insert delete update）。
+
+![事务操作流程](snapshots/事务操作流程.png)
+
+​	事务包括四大特性：ACID
+
+​		A：原子性：事务是最小的工作单元，不可再分。
+
+​		C：一致性：事务必须保证多条DML语句同时成功或失败。
+
+​		I：隔离性：事务A与事务B之间隔离。
+
+​		D：持久性：最终数据必须持久化到硬盘文件中。
+
+​	隔离性。MySQL默认的级别是可重复读（级别3）。理论上隔离级别包括4个：
+
+​			隔离级别1：读未提交（read uncommitted）。对方事务还没有提交，当前事务可以读取到对方未提交的数据。读未提交存在脏读现象（Dirty Read）：表示读到了脏数据。
+
+​			隔离级别2：读已提交（read committed）。对方事务已提交，我方可读。读已提交存在的问题：不可重复读。解决的问题：脏读现象。
+
+​			隔离级别3：可重复读（repeatable read）。
+
+​			隔离级别4：序列化读/串行化读（serializable）。效率低，需要事务排队。
+
+​	使用两个事务演示隔离级别：
+
+​		（1）演示read uncommitted：
+
+```mysql
+设置事务的全局隔离级别：
+	set global transaction isolation level 隔离级别名称;
+设置当前 MySQL 连接的隔离级别：
+set session transaction isolation level 隔离级别名称;
+查看事务的全局隔离级别：
+	select @@global.tx_isolation;  // 老版本5.7之前
+	select @@global.transaction_isolation;  // 5.7.20 版本之后用这个
+```
+
+索引（Index）
+
+​	表的检索方式：
+
+​		全表扫描；	
+
+​		索引检索。
+
+​	索引的作用（效率高的原因）：缩小了扫描的范围。
+
+​	索引的分类：
+
+```markdown
+	单一索引;
+	符合索引；
+	主键索引；
+	唯一索引;
+	......
+```
+
+​	索引的使用情况：	
+
+​		数据量庞大；（根据客户的需求，线上环境）
+
+​		字段很少有DML操作；（字段进行修改操作，索引页需要维护逇情况）
+
+​		该字段经常出现在where子句中。（经常根据哪个字段查询）
+
+---
+
+！！！！查看SQL语句的执行计划：
+
+```mysql
+explain select语句;
+```
+
+---
+
+​	如何添加索引：
+
+```mysql
+create index 索引名称 on 表名(字段名);
+Example:
+create index emp_sal_index on emp(sal);
+```
+
+​	如何删除索引：
+
+```mysql
+drop index 索引名称 on 表名;
+Example:
+drop index emp_sal_index on emp;
+```
+
+​	索引底层采用的数据结构：B+ Tree 。
+
+​	索引实现原理：通过B+ Tree缩小扫描范围，底层索引进行了排序，分区，索引会携带数据在表中的“物理地址”，最终通过索引检索到数据之后，获取到关联的物理地址，通过物理地址定位表中的数据，效率是最高的。
+
+![索引的图解](snapshots/索引的图解.png)
+
+​	例子：
+
+```mysql
+select ename from emp where ename="SMITH";
+通过索引转换：
+select ename from emp where 物理地址=0x3;
+```
+
+​	索引什么时候失效？
+
+```mysql
+select ename from emp where ename like '&A&';
+模糊查询的时候，第一个通配符使用的是%，这个时候索引是失效的。
+```
+
+视图（view）
+
+​	什么是视图：
+​		通过不同的角度去看待数据。
+
+​	创建和删除视图：
+
+```mysql
+create view 视图名 as select语句;
+drop view 视图名;
+```
+
+​	对视图进行增删改查，会影响原表数据。
+
+​	面向视图操作：
+
+```mysql
+select * from 视图名;
+```
+
+​	视图的作用：
+​		可以隐藏表的实现细节。
+
+DBA（数据库管理员）
+
+​	将数据导入：
+
+```mysql
+先创建数据库：
+create database 数据库名;
+使用数据库：
+use 数据库名;
+导入数据：
+source 数据地址;
+```
+
+​	将数据导出：
+
+```mysql
+有问题：
+mysqldump 数据库名>导出地址(包含数据库名.sql) -u用户名 -p密码;
+Example：
+mysqldump testsql>D:\testsql.sql -uroot -p1233;
+```
+
+数据库设计三范式
+
+​	范式的作用：避免数据冗余。
+
+​	三范式：
+​		第一范式：任何一张表都应该有主键，并且每一个字段原子性不可再分；
+​		第二范式：建立在第一范式之上的，所有非主键字段完全依赖主键，不能产生部分依赖；常见于 多对多 关系中，三张表，关系表两个外键。
+​		第三范式：建立在第二范式之上的，所有非主键字段直接依赖主键，不能产生传递依赖。常见于 一对多 关系中，两张表，多的表加外键。
+
+​	一对一设计有两种方案：
+​		主键共享；
+​		外键唯一。
