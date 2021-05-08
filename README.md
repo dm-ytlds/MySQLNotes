@@ -1,3 +1,4 @@
 # MySQLNotes
-MySQLNotes
-2021.05.06-2021.05.08更新了MySQL的相关笔记。
+
+1.MySQL的相关笔记
+2.MySQL基础知识练习题
